@@ -9,46 +9,58 @@ import (
 
 var iv = []byte("zs5460@gmail.com")
 
-// Encrypt ...
-func Encrypt(plainText string, key string) (string, error) {
-	block, err := aes.NewCipher([]byte(key))
-	if err != nil {
-		return "", err
-	}
-	plainTextByte := []byte(plainText)
-	blockSize := block.BlockSize()
-	plainTextByte = addPKCS7Padding(plainTextByte, blockSize)
-	cipherText := make([]byte, len(plainTextByte))
-	mode := cipher.NewCBCEncrypter(block, iv)
-	mode.CryptBlocks(cipherText, plainTextByte)
-	return base64.StdEncoding.EncodeToString(cipherText), nil
+// EncryptString ...
+func EncryptString(plainText, key string) (string, error) {
+	ret, err := Encrypt([]byte(plainText), []byte(key))
+	return base64.StdEncoding.EncodeToString(ret), err
 }
 
-// Decrypt ...
-func Decrypt(cipherText string, key string) (string, error) {
-	block, err := aes.NewCipher([]byte(key))
+// Encrypt ...
+func Encrypt(data, key []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	cipherDecodeText, decodeErr := base64.StdEncoding.DecodeString(cipherText)
+	blockSize := block.BlockSize()
+	data = addPKCS7Padding(data, blockSize)
+	cipherData := make([]byte, len(data))
+	mode := cipher.NewCBCEncrypter(block, iv)
+	mode.CryptBlocks(cipherData, data)
+	return cipherData, nil
+}
+
+// DecryptString ...
+func DecryptString(cipherText, key string) (string, error) {
+	data, decodeErr := base64.StdEncoding.DecodeString(cipherText)
 	if decodeErr != nil {
 		return "", decodeErr
 	}
+	ret, err := Decrypt(data, []byte(key))
+	return string(ret), err
+}
+
+// Decrypt ...
+func Decrypt(data, key []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
 	mode := cipher.NewCBCDecrypter(block, iv)
-	originCipherText := make([]byte, len(cipherDecodeText))
-	mode.CryptBlocks(originCipherText, cipherDecodeText)
-	originCipherText = stripPKSC7Padding(originCipherText)
-	return string(originCipherText), nil
+	originData := make([]byte, len(data))
+	mode.CryptBlocks(originData, data)
+	originData = stripPKSC7Padding(originData)
+	return originData, nil
 }
 
-func addPKCS7Padding(ciphertext []byte, blockSize int) []byte {
-	padding := blockSize - len(ciphertext)%blockSize
+func addPKCS7Padding(data []byte, blockSize int) []byte {
+	padding := blockSize - len(data)%blockSize
 	paddingText := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(ciphertext, paddingText...)
+	return append(data, paddingText...)
 }
 
-func stripPKSC7Padding(cipherText []byte) []byte {
-	length := len(cipherText)
-	unpadding := int(cipherText[length-1])
-	return cipherText[:(length - unpadding)]
+func stripPKSC7Padding(data []byte) []byte {
+	length := len(data)
+	unpadding := int(data[length-1])
+	return data[:(length - unpadding)]
 }

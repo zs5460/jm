@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestEncrypt(t *testing.T) {
+func TestEncryptString(t *testing.T) {
 	type args struct {
 		plainText string
 		key       string
@@ -19,19 +19,19 @@ func TestEncrypt(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Encrypt(tt.args.plainText, tt.args.key)
+			got, err := EncryptString(tt.args.plainText, tt.args.key)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Encrypt() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EncryptString() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("Encrypt() = %v, want %v", got, tt.want)
+				t.Errorf("EncryptString() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestDecrypt(t *testing.T) {
+func TestDecryptString(t *testing.T) {
 	type args struct {
 		cipherText string
 		key        string
@@ -46,13 +46,13 @@ func TestDecrypt(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Decrypt(tt.args.cipherText, tt.args.key)
+			got, err := DecryptString(tt.args.cipherText, tt.args.key)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Decrypt() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("DecryptString() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("Decrypt() = %v, want %v", got, tt.want)
+				t.Errorf("DecryptString() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -64,9 +64,9 @@ func TestEncDec(t *testing.T) {
 
 	//key = "1"
 	t.Log(s)
-	s1, _ := Encrypt(s, key)
+	s1, _ := EncryptString(s, key)
 	t.Log(s1)
-	s2, err := Decrypt(s1, key)
+	s2, err := DecryptString(s1, key)
 	if err != nil {
 		t.Error(err)
 	}
